@@ -14,3 +14,8 @@ panic = "abort" # 禁用 panic 时栈展开
 [dependencies]
 bootloader = "0.9"
 volatile = "0.2.6" #保证读操作或写操作不会被编译器优化。
+
+#延迟初始化（lazily initialized）静态变量；这个变量的值将在第一次使用时计算，而非在编译时计算
+[dependencies.lazy_static]
+version = "1.0"
+features = ["spin_no_std"]

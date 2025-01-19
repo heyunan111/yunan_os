@@ -9,7 +9,7 @@ mod vga_buffer;
              // 因为链接器会寻找一个名为 `_start` 的函数，所以这个函数就是入口点
              // 默认命名为 `_start`
 pub extern "C" fn _start() -> ! {
-    vga_buffer::print_sth();
+    vga_buffer::test_print_sth();
     loop {}
 }
 
