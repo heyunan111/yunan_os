@@ -48,6 +48,8 @@ struct ScreenChar {
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
+use core::fmt;
+
 use volatile::Volatile;
 
 #[repr(transparent)]
@@ -121,27 +123,43 @@ impl Writer {
     }
 }
 
+use core::fmt::Write;
+impl Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_str(s);
+        Ok(())
+    }
+}
+
 ///TODO：双缓冲区，无锁并发，高效内存复制
 use lazy_static::lazy_static;
+use spin::Mutex;
 lazy_static! {
-    pub static ref WRITER: Writer = Writer {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_pos: 0,
         character_color_code: ColorCode::new(Color::EnWhite, Color::EnBlack),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
+    });
 }
 
-pub fn test_print_sth() {
-    let mut writer = Writer {
-        column_pos: 0,
-        character_color_code: ColorCode::new(Color::EnBlue, Color::EnBlack),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => {$crate::vga_buffer::_print(format_args!($($arg)*))};
+}
+
+#[macro_export]
+macro_rules! println {
+    () => {
+        $crate::print!("\n");
     };
 
-    writer.write_byte(b'h');
-    writer.write_str("ello word!");
-    writer.cheng_character_color(ColorCode::new(Color::EnLightBlue, Color::EnBlack));
-    writer.write_byte(b'\n');
-    writer.write_str("word!");
-    writer.write_str("你好"); //unicode 不可打印
+    ($($arg:tt)*) => {
+        ($crate::print!("{}\n",format_args!($($arg)*)) );
+    };
 }
