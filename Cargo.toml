@@ -5,18 +5,36 @@ edition = "2021"
 
 # 使用 `cargo build` 编译时需要的配置
 [profile.dev]
-panic = "abort" # 禁用panic时栈展开
+#panic = "abort" # 禁用panic时栈展开
 
 # 使用 `cargo build --release` 编译时需要的配置
 [profile.release]
-panic = "abort" # 禁用 panic 时栈展开
+#panic = "abort" # 禁用 panic 时栈展开
 
 [dependencies]
 bootloader = "0.9"
-volatile = "0.2.6" #保证读操作或写操作不会被编译器优化。
-spin = "0.5.2"
+volatile = "0.2.6"   #保证读操作或写操作不会被编译器优化。
+spin = "0.9.8"
+x86_64 = "0.14.2"
+uart_16550 = "0.3.2"
 
 #延迟初始化（lazily initialized）静态变量；这个变量的值将在第一次使用时计算，而非在编译时计算
 [dependencies.lazy_static]
 version = "1.0"
 features = ["spin_no_std"]
+
+[package.metadata.bootimage]
+test-args = [
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-serial",
+    "stdio",
+    "-display",
+    "none",
+]
+test-success-exit-code = 33 # (0x10 << 1) | 1
+test-timeout = 200 #测试超时时间200s
+
+[[test]]
+name = "should_panic"
+harness = false

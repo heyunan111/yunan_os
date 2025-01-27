@@ -163,3 +163,21 @@ macro_rules! println {
         ($crate::print!("{}\n",format_args!($($arg)*)) );
     };
 }
+
+#[test_case]
+fn test_println_sth() {
+    print!("some ...");
+    for i in 0..1000 {
+        println!("i:{}", i);
+    }
+}
+
+#[test_case]
+fn test_println_out_put() {
+    let s = "test println out put";
+    println!("{}", s);
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+    }
+}
