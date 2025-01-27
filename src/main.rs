@@ -6,6 +6,8 @@
 
 use core::panic::PanicInfo;
 
+use yunan_os::interrupts::init_idt;
+
 mod serial;
 mod vga_buffer;
 
@@ -13,10 +15,14 @@ mod vga_buffer;
              // 因为链接器会寻找一个名为 `_start` 的函数，所以这个函数就是入口点
              // 默认命名为 `_start`
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
+    init_idt();
 
     #[cfg(test)]
     test_main();
+
+    unsafe {
+        *(0xdeadbeef as *mut u8) = 42;
+    };
 
     loop {}
 }
